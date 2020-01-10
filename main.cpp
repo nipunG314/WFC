@@ -29,32 +29,40 @@ void debugMatrix(cv::Mat mat) {
 	std::cout << "Matrix: " << debugInfo << ", Rows: " << mat.rows << ", Cols: " << mat.cols << "\n";
 }
 
-int main() {
-	cv::Mat m2, m3, m4;
-	{
-		int arr[3][4] = {
-			{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}
-		};
+/*
+	This function assumes that mat1 and mat2 have
+	the same dimensions.
 
-		cv::Mat m1(3, 4, CV_32SC1);
-		std::memcpy(m1.data, arr, 3 * 4 * sizeof(int));
+	This comparator is intended for matrices that
+	are about 2-5 pixels wide and high. It may not
+	be efficient for larger matrices.
 
-		m2 = cv::Mat(m1, cv::Rect(0, 0, 1, 1)).clone();
-		m3 = cv::Mat(m1, cv::Rect(1, 1, 1, 1)).clone();
-		m4 = cv::Mat(m1, cv::Rect(2, 2, 1, 1)).clone();
+*/
+bool compareMat(cv::Mat mat1, cv::Mat mat2) {
+	for (int r = 0; r < mat1.rows; r++) {
+		cv::Vec3b *ptr1 = mat1.ptr<cv::Vec3b>(r);
+		cv::Vec3b *ptr2 = mat2.ptr<cv::Vec3b>(r);
+
+		for (int c = 0; c < mat1.cols; c++) {
+			if (ptr1[c] != ptr2[c])
+				return false;
+		}
 	}
 
-	std::cout << m2 << "\n";
-	std::cout << m3 << "\n";
-	std::cout << m4 << "\n";
-	debugMatrix(m4);
+	return true;
+}
 
-	int RefCount = m2.u ? (m2.u->refcount) : 0;
-	std::cout << RefCount << "\n";
-	RefCount = m3.u ? (m3.u->refcount) : 0;
-	std::cout << RefCount << "\n";
-	RefCount = m4.u ? (m4.u->refcount) : 0;
-	std::cout << RefCount << "\n";
+int main() {
+	cv::Mat image = cv::imread("image.png", cv::IMREAD_COLOR); // Read the file
+	if (image.empty()) {
+		std::cout << "Could not open or find the image" << std::endl;
+		return -1;
+	}
+
+	cv::Mat m1(image, cv::Rect(0, 0, 10, 10));
+	cv::Mat m2 = cv::Mat(image, cv::Rect(1, 3, 10, 10)).clone();
+
+	std::cout << compareMat(m1, m2) << "\n";
 
 	return 0;
 }

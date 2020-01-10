@@ -1,4 +1,5 @@
 *.props
+*.png
 .vs
 *.vcxproj*
 Debug
