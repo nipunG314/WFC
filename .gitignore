@@ -1,0 +1,5 @@
+*.props
+.vs
+*.vcxproj*
+Debug
+Release
