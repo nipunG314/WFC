@@ -11,6 +11,9 @@ class WFC {
 	std::vector<cv::Mat> tileCache;
 
 	bool preprocess(std::string fileName);
+	bool isTileInCache(cv::Mat tile);
+	void buildTileCache(cv::Mat src, int tileSize);
+	void addTileToCache(cv::Mat tile);
 
 public:
 	WFC(std::string fileName, int tileSize);

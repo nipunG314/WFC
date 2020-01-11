@@ -1,5 +1,4 @@
 #include <iostream>
-#include <vector>
 
 #include "core.h"
 
@@ -8,10 +7,62 @@ WFC::WFC(std::string fileName, int tileSize) : tileSize(tileSize) {
 		return;
 }
 
-std::vector<cv::Mat> fetchTiles(cv::Mat src, int tileSize) {
+std::vector<cv::Mat> computeRotationsReflections(cv::Mat src) {
+	std::vector<cv::Mat> result;
+	{
+		cv::Mat dest = cv::Mat(src).clone();
+		result.push_back(dest);
+
+		for (uint i = 0; i < 3; i++) {
+			dest = cv::Mat(dest).clone();
+			cv::rotate(dest, dest, cv::ROTATE_90_CLOCKWISE);
+			result.push_back(dest);
+		}
+
+		for (uint i = 0; i < 4; i++) {
+			dest = cv::Mat(result[i]).clone();
+			cv::flip(dest, dest, 0);
+			result.push_back(dest);
+		}
+	}
+
+	// Ensure that all the rotations and reflections
+	// unique in memory
+	//
+	// If untrue, return empty vector
+
+	for (uint j = 0; j < result.size(); j++) {
+		if (result[j].u->refcount != 1)
+			return std::vector<cv::Mat>();
+	}
+
+	return result;
+}
+
+bool WFC::preprocess(std::string fileName) {
+	cv::Mat source = cv::imread(fileName);
+
+	if (source.empty()) {
+		error("Could not open or find the image");
+		return false;
+	}
+
+	buildTileCache(source, tileSize);
+
+	return true;
+}
+
+bool WFC::isTileInCache(cv::Mat tile) {
+	for (auto storedTile : tileCache) {
+		if (compareMat(tile, storedTile))
+			return true;
+	}
+	return false;
+}
+
+void WFC::buildTileCache(cv::Mat src, int tileSize) {
 	assert(tileSize >= 0);
 
-	std::vector<cv::Mat> result;
 	{
 		cv::Mat tile;
 		cv::Mat concatColMat, concatRowMat;
@@ -73,7 +124,7 @@ std::vector<cv::Mat> fetchTiles(cv::Mat src, int tileSize) {
 						tile.push_back(concatRowMat);
 					}
 				}
-				result.push_back(tile);
+				addTileToCache(tile);
 			}
 		}
 	}
@@ -83,87 +134,26 @@ std::vector<cv::Mat> fetchTiles(cv::Mat src, int tileSize) {
 	//
 	// If untrue, return empty vector
 
-	for (uint j = 0; j < result.size(); j++) {
-		if (result[j].u->refcount != 1)
-			return std::vector<cv::Mat>();
-	}
-
-	return result;
-}
-
-std::vector<cv::Mat> computeRotationsReflections(cv::Mat src) {
-	std::vector<cv::Mat> result;
-	{
-		cv::Mat dest = cv::Mat(src).clone();
-		result.push_back(dest);
-
-		for (uint i = 0; i < 3; i++) {
-			dest = cv::Mat(dest).clone();
-			cv::rotate(dest, dest, cv::ROTATE_90_CLOCKWISE);
-			result.push_back(dest);
-		}
-
-		for (uint i = 0; i < 4; i++) {
-			dest = cv::Mat(result[i]).clone();
-			cv::flip(dest, dest, 0);
-			result.push_back(dest);
+	for (uint j = 0; j < tileCache.size(); j++) {
+		if (tileCache[j].u->refcount != 1) {
+			error("Tiles in TileCache with multiple references");
+			return;
 		}
 	}
-
-	// Ensure that all the rotations and reflections
-	// unique in memory
-	//
-	// If untrue, return empty vector
-
-	for (uint j = 0; j < result.size(); j++) {
-		if (result[j].u->refcount != 1)
-			return std::vector<cv::Mat>();
-	}
-
-	return result;
 }
 
-std::vector<cv::Mat> rotateReflectVec(std::vector<cv::Mat> tiles) {
-	std::vector<cv::Mat> result;
-	int x = 0;
+void WFC::addTileToCache(cv::Mat tile) {
+	if (isTileInCache(tile))
+		return;
 
-	for (auto tile : tiles) {
-		auto rotatedReflected = computeRotationsReflections(tile);
-		if (rotatedReflected.empty()) {
-			error("There were tiles in the result from computeRotationsReflections() with more than one references");
-			return std::vector<cv::Mat>();
-		}
-		result.reserve(result.size() + rotatedReflected.size());
-		result.insert(result.end(), rotatedReflected.begin(), rotatedReflected.end());
-		x++;
-		std::cout << x << "\n";
-	}
-
-	return result;
-}
-
-bool WFC::preprocess(std::string fileName) {
-	cv::Mat source = cv::imread(fileName);
-
-	if (source.empty()) {
-		error("Could not open or find the image");
-		return false;
-	}
-
-	auto tiles = fetchTiles(source, tileSize);
+	auto tiles = computeRotationsReflections(tile);
 	if (tiles.empty()) {
-		error("There were tiles in the result from fetchTiles() with more than one references");
-		return false;
-	}
-	tiles = rotateReflectVec(tiles);
-	if (tiles.empty()) {
-		error("There were tiles in the result from rotateReflectVec() with more than one references");
-		return false;
+		error("Tiles in the result from computeRotationsReflections() with multiple references");
+		return;
 	}
 
-	stub("WFC::preprocess: Add unique tiles to cache");
-
-	return false;
+	tileCache.reserve(tileCache.size() + tiles.size());
+	tileCache.insert(tileCache.end(), tiles.begin(), tiles.end());
 }
 
 void WFC::run() {
