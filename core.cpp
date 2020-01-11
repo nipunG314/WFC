@@ -8,9 +8,36 @@ WFC::WFC(std::string fileName) : tileSize(tileSize) {
 		return;
 }
 
-std::vector<cv::Mat> computeRotationsReflections(cv::Mat source) {
-	stub("Implement computeRotationsReflections");
-	return std::vector<cv::Mat>();
+std::vector<cv::Mat> computeRotationsReflections(cv::Mat src) {
+	std::vector<cv::Mat> result;
+	{
+		cv::Mat dest = cv::Mat(src).clone();
+		result.push_back(dest);
+
+		for (int i = 0; i < 3; i++) {
+			dest = cv::Mat(dest).clone();
+			cv::rotate(dest, dest, cv::ROTATE_90_CLOCKWISE);
+			result.push_back(dest);
+		}
+
+		for (int i = 0; i < 4; i++) {
+			dest = cv::Mat(result[i]).clone();
+			cv::flip(dest, dest, 0);
+			result.push_back(dest);
+		}
+	}
+
+	// Ensure that all the rotations and reflections
+	// unique in memory
+	//
+	// If untrue, return empty vector
+
+	for (int j = 0; j < result.size(); j++) {
+		if (result[j].u->refcount != 1)
+			return std::vector<cv::Mat>();
+	}
+
+	return result;
 }
 
 bool WFC::preprocess(std::string fileName) {
