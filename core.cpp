@@ -123,6 +123,25 @@ std::vector<cv::Mat> computeRotationsReflections(cv::Mat src) {
 	return result;
 }
 
+std::vector<cv::Mat> rotateReflectVec(std::vector<cv::Mat> tiles) {
+	std::vector<cv::Mat> result;
+	int x = 0;
+
+	for (auto tile : tiles) {
+		auto rotatedReflected = computeRotationsReflections(tile);
+		if (rotatedReflected.empty()) {
+			error("There were tiles in the result from computeRotationsReflections() with more than one references");
+			return std::vector<cv::Mat>();
+		}
+		result.reserve(result.size() + rotatedReflected.size());
+		result.insert(result.end(), rotatedReflected.begin(), rotatedReflected.end());
+		x++;
+		std::cout << x << "\n";
+	}
+
+	return result;
+}
+
 bool WFC::preprocess(std::string fileName) {
 	cv::Mat source = cv::imread(fileName);
 
