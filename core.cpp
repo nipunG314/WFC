@@ -3,8 +3,12 @@
 #include "core.h"
 
 WFC::WFC(std::string fileName, int tileSize) : tileSize(tileSize) {
-	if (!preprocess(fileName))
+	if (!preprocess(fileName)) {
+		status = false;
 		return;
+	}
+
+	status = true;
 }
 
 std::vector<cv::Mat> computeRotationsReflections(cv::Mat src) {

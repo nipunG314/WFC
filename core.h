@@ -8,6 +8,7 @@
 
 class WFC {
 	int tileSize;
+	bool status;
 	std::vector<cv::Mat> tileCache;
 
 	bool preprocess(std::string fileName);
