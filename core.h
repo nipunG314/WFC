@@ -7,13 +7,13 @@
 #define WFC_CORE
 
 class WFC {
-	uint tileSize;
+	int tileSize;
 	std::vector<cv::Mat> tileCache;
 
 	bool preprocess(std::string fileName);
 
 public:
-	WFC(std::string fileName);
+	WFC(std::string fileName, int tileSize);
 
 	void run();
 };

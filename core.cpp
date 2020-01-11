@@ -3,7 +3,7 @@
 
 #include "core.h"
 
-WFC::WFC(std::string fileName) : tileSize(tileSize) {
+WFC::WFC(std::string fileName, int tileSize) : tileSize(tileSize) {
 	if (!preprocess(fileName))
 		return;
 }
