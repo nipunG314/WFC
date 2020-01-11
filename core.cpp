@@ -150,8 +150,18 @@ bool WFC::preprocess(std::string fileName) {
 		return false;
 	}
 
-	stub("WFC::preprocess: Fetch tiles");
-	stub("WFC::preprocess: RotateReflect tiles and add unique tiles to cache");
+	auto tiles = fetchTiles(source, tileSize);
+	if (tiles.empty()) {
+		error("There were tiles in the result from fetchTiles() with more than one references");
+		return false;
+	}
+	tiles = rotateReflectVec(tiles);
+	if (tiles.empty()) {
+		error("There were tiles in the result from rotateReflectVec() with more than one references");
+		return false;
+	}
+
+	stub("WFC::preprocess: Add unique tiles to cache");
 
 	return false;
 }
