@@ -14,13 +14,13 @@ std::vector<cv::Mat> computeRotationsReflections(cv::Mat src) {
 		cv::Mat dest = cv::Mat(src).clone();
 		result.push_back(dest);
 
-		for (int i = 0; i < 3; i++) {
+		for (uint i = 0; i < 3; i++) {
 			dest = cv::Mat(dest).clone();
 			cv::rotate(dest, dest, cv::ROTATE_90_CLOCKWISE);
 			result.push_back(dest);
 		}
 
-		for (int i = 0; i < 4; i++) {
+		for (uint i = 0; i < 4; i++) {
 			dest = cv::Mat(result[i]).clone();
 			cv::flip(dest, dest, 0);
 			result.push_back(dest);
@@ -32,7 +32,7 @@ std::vector<cv::Mat> computeRotationsReflections(cv::Mat src) {
 	//
 	// If untrue, return empty vector
 
-	for (int j = 0; j < result.size(); j++) {
+	for (uint j = 0; j < result.size(); j++) {
 		if (result[j].u->refcount != 1)
 			return std::vector<cv::Mat>();
 	}
