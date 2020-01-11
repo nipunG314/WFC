@@ -48,7 +48,9 @@ bool WFC::preprocess(std::string fileName) {
 		return false;
 	}
 
-	stub("Implement WFC::preprocess");
+	stub("WFC::preprocess: Fetch tiles");
+	stub("WFC::preprocess: RotateReflect tiles and add unique tiles to cache");
+
 	return false;
 }
 
