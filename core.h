@@ -24,8 +24,6 @@ void debugMat(cv::Mat mat);
 
 bool compareMat(cv::Mat mat1, cv::Mat mat2);
 
-bool ensureUniqueness(std::vector<cv::Mat>);
-
 void error(std::string errMessage);
 
 void stub(std::string stubMessage);

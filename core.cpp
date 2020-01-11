@@ -16,7 +16,7 @@ std::vector<cv::Mat> computeRotationsReflections(cv::Mat source) {
 bool WFC::preprocess(std::string fileName) {
 	cv::Mat source = cv::imread(fileName);
 
-	if (!source.empty()) {
+	if (source.empty()) {
 		error("Could not open or find the image");
 		return false;
 	}
