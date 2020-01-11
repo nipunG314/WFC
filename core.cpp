@@ -8,6 +8,89 @@ WFC::WFC(std::string fileName) : tileSize(tileSize) {
 		return;
 }
 
+std::vector<cv::Mat> fetchTiles(cv::Mat src, int tileSize) {
+	assert(tileSize >= 0);
+
+	std::vector<cv::Mat> result;
+	{
+		cv::Mat tile;
+		cv::Mat concatColMat, concatRowMat;
+
+		for (int j = 0; j < src.rows; j++) {
+			for (int i = 0; i < src.cols; i++) {
+				if (j <= src.rows - tileSize) {
+					if (i <= src.cols - tileSize) {
+						tile = cv::Mat(src, cv::Rect(i, j, tileSize, tileSize)).clone();
+					} else {
+						int tileIncrement = i + tileSize - src.cols;
+						tile = cv::Mat(src, cv::Rect(i, j, tileSize - tileIncrement, tileSize)).clone();
+						concatColMat = cv::Mat(tileSize, tileIncrement, src.type());
+
+						for (int m = 0; m < tileSize; m++) {
+							for (int k = 0; k < tileIncrement; k++) {
+								concatColMat.at<uchar>(cv::Point(k, m)) = src.at<uchar>(cv::Point(k, m + j));
+							}
+						}
+
+						cv::hconcat(tile, concatColMat, tile);
+					}
+				} else {
+					if (i <= src.cols - tileSize) {
+						int tileIncrement = j + tileSize - src.rows;
+						tile = cv::Mat(src, cv::Rect(i, j, tileSize, tileSize - tileIncrement)).clone();
+						concatRowMat = cv::Mat(tileIncrement, tileSize, src.type());
+
+						for (int m = 0; m < tileIncrement; m++) {
+							for (int k = 0; k < tileSize; k++) {
+								concatRowMat.at<uchar>(cv::Point(k, m)) = src.at<uchar>(cv::Point(k + i, m));
+							}
+						}
+
+						tile.push_back(concatRowMat);
+					} else {
+						int tileIncrementX = i + tileSize - src.cols;
+						int tileIncrementY = j + tileSize - src.rows;
+						tile = cv::Mat(src, cv::Rect(i, j, tileSize - tileIncrementX, tileSize - tileIncrementY)).clone();
+						concatColMat = cv::Mat(tileSize - tileIncrementY, tileIncrementX, src.type());
+						concatRowMat = cv::Mat(tileIncrementY, tileSize - tileIncrementX, src.type());
+
+						for (int m = 0; m < tileSize - tileIncrementY; m++) {
+							for (int k = 0; k < tileIncrementX; k++) {
+								concatColMat.at<uchar>(cv::Point(k, m)) = src.at<uchar>(cv::Point(k, m + j));
+							}
+						}
+
+						for (int m = 0; m < tileIncrementY; m++) {
+							for (int k = 0; k < tileSize - tileIncrementX; k++) {
+								concatRowMat.at<uchar>(cv::Point(k, m)) = src.at<uchar>(cv::Point(k + i, m));
+							}
+						}
+
+						cv::Mat concatCornerMat = cv::Mat(src, cv::Rect(0, 0, tileIncrementX, tileIncrementY)).clone();
+						cv::hconcat(concatRowMat, concatCornerMat, concatRowMat);
+
+						cv::hconcat(tile, concatColMat, tile);
+						tile.push_back(concatRowMat);
+					}
+				}
+				result.push_back(tile);
+			}
+		}
+	}
+
+	// Ensure that all the tiles are
+	// unique in memory
+	//
+	// If untrue, return empty vector
+
+	for (uint j = 0; j < result.size(); j++) {
+		if (result[j].u->refcount != 1)
+			return std::vector<cv::Mat>();
+	}
+
+	return result;
+}
+
 std::vector<cv::Mat> computeRotationsReflections(cv::Mat src) {
 	std::vector<cv::Mat> result;
 	{
