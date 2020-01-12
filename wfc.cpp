@@ -145,14 +145,24 @@ void WFC::buildTileCache(cv::Mat src, int tileSize) {
 
 	// Ensure that all the tiles are
 	// unique in memory
-	//
-	// If untrue, return empty vector
 
 	for (uint j = 0; j < tileCache.size(); j++) {
 		if (!tileCache[j].matchRefCount(1)) {
 			error("Tiles in TileCache with multiple references");
 			return;
 		}
+	}
+
+	// Ensure that all the tile frequencies add
+	// up to the original set of tiles
+
+	int tileFreqSum = 0;
+	for (uint j = 0; j < tileCache.size(); j++) {
+		tileFreqSum += tileCache[j].getFreq();
+	}
+
+	if (tileFreqSum != src.rows * src.cols * 8) {
+		error("The Frequency Sum of the TileCache does not equal to expected value");
 	}
 }
 
