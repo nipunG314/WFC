@@ -6,6 +6,18 @@ Tile Tile::clone() {
 	return Tile(index + 1, freq, data.clone());
 }
 
+bool Tile::matchRefCount(int refCount) {
+	return data.u->refcount == refCount;
+}
+
+void Tile::flipData(int flipCode) {
+	cv::flip(data, data, flipCode);
+}
+
+void Tile::rotateData(int rotateCode) {
+	cv::rotate(data, data, rotateCode);
+}
+
 std::string Tile::matType() {
 	std::string r;
 

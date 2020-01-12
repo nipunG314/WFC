@@ -15,9 +15,11 @@ public:
 	void setIndex(int newIndex) { index = newIndex; }
 	int getFreq() { return freq; }
 	void setFreq(int newFreq) { freq = newFreq; }
-	cv::Mat getData() { return data; }
 
 	Tile clone();
+	bool matchRefCount(int refCount);
+	void flipData(int flipCode);
+	void rotateData(int rotateCode);
 
 	std::string matType();
 	void debug();

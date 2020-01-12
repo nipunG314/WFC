@@ -22,13 +22,13 @@ std::vector<Tile> computeRotationsReflections(Tile src) {
 
 		for (uint i = 0; i < 3; i++) {
 			dest = dest.clone();
-			cv::rotate(dest.getData(), dest.getData(), cv::ROTATE_90_CLOCKWISE);
+			dest.rotateData(cv::ROTATE_90_CLOCKWISE);
 			result.push_back(dest);
 		}
 
 		for (uint i = 0; i < 4; i++) {
 			dest = result[i].clone();
-			cv::flip(dest.getData(), dest.getData(), 0);
+			dest.flipData(0);
 			result.push_back(dest);
 		}
 	}
@@ -39,7 +39,7 @@ std::vector<Tile> computeRotationsReflections(Tile src) {
 	// If untrue, return empty vector
 
 	for (uint j = 0; j < result.size(); j++) {
-		if (result[j].getData().u->refcount != 1)
+		if (!result[j].matchRefCount(1))
 			return std::vector<Tile>();
 	}
 
@@ -142,7 +142,7 @@ void WFC::buildTileCache(cv::Mat src, int tileSize) {
 	// If untrue, return empty vector
 
 	for (uint j = 0; j < tileCache.size(); j++) {
-		if (tileCache[j].getData().u->refcount != 1) {
+		if (!tileCache[j].matchRefCount(1)) {
 			error("Tiles in TileCache with multiple references");
 			return;
 		}
