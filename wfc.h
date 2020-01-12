@@ -12,6 +12,7 @@ class WFC {
 	std::vector<Tile> tileCache;
 
 	bool preprocess(std::string fileName);
+	std::vector<Tile> computeRotationsReflections(Tile src);
 	int getTile(Tile tile);
 	void buildTileCache(cv::Mat src, int tileSize);
 	void addTileToCache(cv::Mat tileData);

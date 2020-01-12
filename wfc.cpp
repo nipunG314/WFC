@@ -14,20 +14,36 @@ WFC::WFC(std::string fileName, int tileSize) : tileSize(tileSize) {
 	status = true;
 }
 
-std::vector<Tile> computeRotationsReflections(Tile src) {
+bool WFC::preprocess(std::string fileName) {
+	cv::Mat source = cv::imread(fileName);
+
+	if (source.empty()) {
+		error("Could not open or find the image");
+		return false;
+	}
+
+	buildTileCache(source, tileSize);
+
+	return true;
+}
+
+std::vector<Tile> WFC::computeRotationsReflections(Tile src) {
 	std::vector<Tile> result;
 	{
 		Tile dest = src.clone();
+		dest.setIndex((int)tileCache.size());
 		result.push_back(dest);
 
 		for (uint i = 0; i < 3; i++) {
 			dest = dest.clone();
+			dest.setIndex((int)tileCache.size() + i + 1);
 			dest.rotateData(cv::ROTATE_90_CLOCKWISE);
 			result.push_back(dest);
 		}
 
 		for (uint i = 0; i < 4; i++) {
 			dest = result[i].clone();
+			dest.setIndex((int)tileCache.size() + i + 4);
 			dest.flipData(0);
 			result.push_back(dest);
 		}
@@ -46,18 +62,6 @@ std::vector<Tile> computeRotationsReflections(Tile src) {
 	return result;
 }
 
-bool WFC::preprocess(std::string fileName) {
-	cv::Mat source = cv::imread(fileName);
-
-	if (source.empty()) {
-		error("Could not open or find the image");
-		return false;
-	}
-
-	buildTileCache(source, tileSize);
-
-	return true;
-}
 
 int WFC::getTile(Tile tile) {
 	// Since the new tile might have an index

@@ -3,7 +3,7 @@
 #include "tile.h"
 
 Tile Tile::clone() {
-	return Tile(index + 1, freq, data.clone());
+	return Tile(index, freq, data.clone());
 }
 
 bool Tile::matchRefCount(int refCount) {
