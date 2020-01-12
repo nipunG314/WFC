@@ -3,6 +3,15 @@
 #ifndef WFC_TILE
 #define WFC_TILE
 
+enum Dir {
+	RIGHT,
+	UP,
+	LEFT,
+	DOWN,
+
+	END
+};
+
 class Tile {
 	int index;
 	int freq;
@@ -20,6 +29,9 @@ public:
 	bool matchRefCount(int refCount);
 	void flipData(int flipCode);
 	void rotateData(int rotateCode);
+
+	Tile crop(Dir dir);
+	bool compatible(Tile tile, Dir dir);
 
 	std::string matType();
 	void debug();

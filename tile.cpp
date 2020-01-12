@@ -18,6 +18,34 @@ void Tile::rotateData(int rotateCode) {
 	cv::rotate(data, data, rotateCode);
 }
 
+Tile Tile::crop(Dir dir) {
+	Tile t = clone();
+	switch (dir) {
+		case RIGHT:
+			t.data = cv::Mat(t.data, cv::Rect(0, 0, t.data.cols - 1, t.data.rows));
+			break;
+		case UP:
+			t.data = cv::Mat(t.data, cv::Rect(0, 1, t.data.cols, t.data.rows - 1));
+			break;
+		case LEFT:
+			t.data = cv::Mat(t.data, cv::Rect(1, 0, t.data.cols - 1, t.data.rows));
+			break;
+		case DOWN:
+			t.data = cv::Mat(t.data, cv::Rect(0, 0, t.data.cols, t.data.rows - 1));
+			break;
+		default:
+			break;
+	}
+	return t;
+}
+
+bool Tile::compatible(Tile tile, Dir dir) {
+	Dir crop1 = (Dir)((dir + 2) % 4);
+	Dir crop2 = dir;
+
+	return crop(crop1) == tile.crop(crop2);
+}
+
 std::string Tile::matType() {
 	std::string r;
 
