@@ -23,55 +23,9 @@ bool WFC::preprocess(std::string fileName) {
 	}
 
 	buildTileCache(source, tileSize);
+	buildAdjacencyRules();
 
 	return true;
-}
-
-std::vector<Tile> WFC::computeRotationsReflections(Tile src) {
-	std::vector<Tile> result;
-	{
-		Tile dest = src.clone();
-		dest.setIndex((int)tileCache.size());
-		result.push_back(dest);
-
-		for (uint i = 0; i < 3; i++) {
-			dest = dest.clone();
-			dest.setIndex((int)tileCache.size() + i + 1);
-			dest.rotateData(cv::ROTATE_90_CLOCKWISE);
-			result.push_back(dest);
-		}
-
-		for (uint i = 0; i < 4; i++) {
-			dest = result[i].clone();
-			dest.setIndex((int)tileCache.size() + i + 4);
-			dest.flipData(0);
-			result.push_back(dest);
-		}
-	}
-
-	// Ensure that all the rotations and reflections
-	// unique in memory
-	//
-	// If untrue, return empty vector
-
-	for (uint j = 0; j < result.size(); j++) {
-		if (!result[j].matchRefCount(1))
-			return std::vector<Tile>();
-	}
-
-	return result;
-}
-
-
-int WFC::getTile(Tile tile) {
-	// Since the new tile might have an index
-	// that hasn't been inserted into the TileCache
-	// yet, ALWAYS return the storedTile's index!
-	for (auto storedTile : tileCache) {
-		if (tile == storedTile)
-			return storedTile.getIndex();
-	}
-	return -1;
 }
 
 void WFC::buildTileCache(cv::Mat src, int tileSize) {
@@ -164,6 +118,65 @@ void WFC::buildTileCache(cv::Mat src, int tileSize) {
 	if (tileFreqSum != src.rows * src.cols * 8) {
 		error("The Frequency Sum of the TileCache does not equal to expected value");
 	}
+}
+
+void WFC::buildAdjacencyRules() {
+	for (int i = 0; i < tileCache.size(); i++) {
+		for (int j = 0; j < tileCache.size(); j++) {
+			for (Dir dir = RIGHT; dir != END; dir = (Dir)(dir + 1)) {
+				if (tileCache[i].compatible(tileCache[j], dir)) {
+					AdjacencyRule rule(tileCache[i], tileCache[j], dir);
+					adjacencyRules.push_back(rule);
+				}
+			}
+		}
+	}
+}
+
+std::vector<Tile> WFC::computeRotationsReflections(Tile src) {
+	std::vector<Tile> result;
+	{
+		Tile dest = src.clone();
+		dest.setIndex((int)tileCache.size());
+		result.push_back(dest);
+
+		for (uint i = 0; i < 3; i++) {
+			dest = dest.clone();
+			dest.setIndex((int)tileCache.size() + i + 1);
+			dest.rotateData(cv::ROTATE_90_CLOCKWISE);
+			result.push_back(dest);
+		}
+
+		for (uint i = 0; i < 4; i++) {
+			dest = result[i].clone();
+			dest.setIndex((int)tileCache.size() + i + 4);
+			dest.flipData(0);
+			result.push_back(dest);
+		}
+	}
+
+	// Ensure that all the rotations and reflections
+	// unique in memory
+	//
+	// If untrue, return empty vector
+
+	for (uint j = 0; j < result.size(); j++) {
+		if (!result[j].matchRefCount(1))
+			return std::vector<Tile>();
+	}
+
+	return result;
+}
+
+int WFC::getTile(Tile tile) {
+	// Since the new tile might have an index
+	// that hasn't been inserted into the TileCache
+	// yet, ALWAYS return the storedTile's index!
+	for (auto storedTile : tileCache) {
+		if (tile == storedTile)
+			return storedTile.getIndex();
+	}
+	return -1;
 }
 
 void WFC::addTileToCache(cv::Mat tileData) {
