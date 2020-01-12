@@ -1,4 +1,5 @@
 *.props
+.editorconfig
 *.png
 .vs
 *.vcxproj*
