@@ -60,9 +60,12 @@ bool WFC::preprocess(std::string fileName) {
 }
 
 int WFC::getTile(Tile tile) {
+	// Since the new tile might have an index
+	// that hasn't been inserted into the TileCache
+	// yet, ALWAYS return the storedTile's index!
 	for (auto storedTile : tileCache) {
 		if (tile.cmp(storedTile))
-			return tile.getIndex();
+			return storedTile.getIndex();
 	}
 	return -1;
 }
