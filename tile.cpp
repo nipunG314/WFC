@@ -52,7 +52,7 @@ void Tile::debug() {
 	be efficient for larger matrices.
 
 */
-bool Tile::cmp(Tile tile) {
+bool Tile::operator==(Tile tile) {
 	for (int r = 0; r < data.rows; r++) {
 		cv::Vec3b *ptr1 = data.ptr<cv::Vec3b>(r);
 		cv::Vec3b *ptr2 = tile.data.ptr<cv::Vec3b>(r);

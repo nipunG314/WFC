@@ -23,7 +23,7 @@ public:
 
 	std::string matType();
 	void debug();
-	bool cmp(Tile tile);
+	bool operator==(Tile tile);
 };
 
 #endif // !WFC_TILE

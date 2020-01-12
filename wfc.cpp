@@ -68,7 +68,7 @@ int WFC::getTile(Tile tile) {
 	// that hasn't been inserted into the TileCache
 	// yet, ALWAYS return the storedTile's index!
 	for (auto storedTile : tileCache) {
-		if (tile.cmp(storedTile))
+		if (tile == storedTile)
 			return storedTile.getIndex();
 	}
 	return -1;
